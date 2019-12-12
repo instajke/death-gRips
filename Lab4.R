@@ -9,11 +9,13 @@ library(ggthemes)
 library(tidytext)
 library(wordcloud)
 library(ggridges)
-library(RCRColorBrewer)
+library(RColorBrewer)
 library(yarrr)
 library(knitr)
 library(kableExtra)
 library(radarchart)
+
+#Collecting the data:
 
 # set up Spotify client ID and client secret
 Sys.setenv(SPOTIFY_CLIENT_ID = '4ee962d67fd240c0a46582d29db19012')
@@ -27,8 +29,6 @@ dg <- dg %>% filter(album_name == "The Money Store" | album_name == "No Love Dee
                               album_name == "Government Plates" | album_name == "The Powers That B" |
                               album_name == "Bottomless Pit" | album_name == "Year Of The Snitch")
 # The Spotify data for Death Grips changed a little in the week between my pulling it and posting this code.
-
-
 
 # Getting artist ID on Genius
 token <- 'KNLeChZJwMONT6PEVk4IJiVowXtz2iCwtjF1SwOHvRnmRnF3-DOA7U_plSuGVSyT'
@@ -52,8 +52,6 @@ genius_get_artists <- function(artist_name, n_results = 10) {
 
 genius_artists <- genius_get_artists('death grips')
 
-
-
 # Getting track urls
 baseURL <- 'https://api.genius.com/artists/'
 requestURL <- paste0(baseURL, genius_artists$artist_id[1], '/songs')
@@ -70,8 +68,6 @@ while (i > 0) {
   }
 }
 
-
-
 # Filtering to get urls only for tracks on which Death Grips is the primary artist
 filtered_track_lyric_urls <- c()
 filtered_track_lyric_titles <- c()
@@ -87,6 +83,7 @@ for (i in 1:length(track_lyric_urls)) {
   }
 }
 
+# Manual correction of taken names, so that datasets from spotify and genius correspond to each other
 filtered_track_lyric_titles[4] <- "Artificial Death In The West"
 filtered_track_lyric_titles[5] <- "Bass Rattle Stars Out The Sky"
 filtered_track_lyric_titles[20] <- "Bootleg (Don't Need Your Help)"
@@ -108,8 +105,6 @@ filtered_track_lyric_titles[131] <- "Whatever I Want (Fuck Who's Watching)"
 filtered_track_lyric_titles[133] <- "Why A Bitch Gotta Lie"
 filtered_track_lyric_titles[134] <- "World Of Dogs"
 filtered_track_lyric_titles[136] <- "You Might Think He Loves You for Your Money but I Know What He Really Loves You for It's Your Brand New Leopard Skin Pillbox Hat"
-
-
 
 dg_lyrics <- data.frame(filtered_track_lyric_urls, filtered_track_lyric_titles)
 dg_lyrics <- dg_lyrics[filtered_track_lyric_titles %in% dg$track_name, ]
@@ -152,6 +147,9 @@ ordered_albums <- factor(spotify_genius$album_name)
 ordered_albums <- factor(ordered_albums,levels(ordered_albums)[c(4,3,2,5,1,6)]) 
 spotify_genius$ordered_albums <- ordered_albums
 
+
+# Sonic analysis:
+
 # valence ridge plot (I used fig.height = 6, fig.width = 6 in an rmd)
 spotify_genius %>% ggplot(aes(x = valence, y = ordered_albums, fill = ..x..)) +
   geom_density_ridges_gradient(scale = 0.9) +
@@ -180,8 +178,8 @@ spotify_genius %>%
   kable_styling("striped", full_width = F, position = "left") %>%
   row_spec(row = 1:5, bold=T, color = "white", background = "#D7261E")
 
-# sonic score graph
-pirateplot(valence + danceability + energy ~ ordered_albums, spotify_genius,
+# sonic score
+pirateplot(valence + energy + danceability ~ ordered_albums, spotify_genius,
            pal = "southpark",
            xlab = "album", ylab = "sonic score",
            theme = 0, point.o = 0.7, avg.line.o = 1, jitter.val = .05,
@@ -211,6 +209,26 @@ spotify_genius %>%
   kable_styling(full_width = F, position = "left") %>%
   row_spec(row = 1:13,bold=T, color = "white", background = "#D7261E")
 
+# anger index
+pirateplot(sqrt((1 - valence) * energy) ~ ordered_albums, spotify_genius,
+           pal = "southpark",
+           xlab = "album", ylab = "sonic score",
+           theme = 0, point.o = 0.7, avg.line.o = 1, jitter.val = .05,
+           bty = "n", cex.axis = 0.6, xaxt = "n")
+axis(1, cex.axis = 0.6, lwd = 0)
+legend("bottomleft", c("1: The Money Store", "2:  No Love Deep Web", "3: Government Plates", "4: The Powers That B", "5: Bottomless Pit", "6: Year Of The Snitch"), bty = "n", cex = 0.6)
+
+# YOTS anger index
+spotify_genius %>%
+  group_by(track_name, album_name) %>%
+  mutate(anger_index = sqrt((1 - valence) * energy)) %>%
+  select(album_name, track_name, anger_index) %>%
+  arrange(desc(anger_index)) %>%
+  filter(album_name == "Year Of The Snitch") %>%
+  kable() %>%
+  kable_styling(full_width = F, position = "left") %>%
+  row_spec(row = 1:13,  bold=T, color = "white", background = "#D7261E")
+
 # album by energy
 spotify_genius %>%
   group_by(album_name) %>%
@@ -218,7 +236,10 @@ spotify_genius %>%
   arrange(desc(`mean(energy)`)) %>%
   kable() %>%
   kable_styling(full_width = F, position = "left") %>%
-  row_spec(row = 1, bold=T, color = "white", background = "#D7261E")
+  row_spec(row = 1:6, bold=T, color = "white", background = "#D7261E")
+
+
+#Lexical analysis:
 
 # tokenized and cleaned datasets of lyrics for textual analysis
 tidy_dg <- spotify_genius %>% unnest_tokens(word, lyrics)
@@ -248,7 +269,7 @@ wordcloud(words = word_count$word, freq = word_count$n,
           max.words=100, random.order=FALSE,
           colors= brewer.pal(n = 8, name = "Dark2"))
 
-# how many tracks does the word "fuck" appear in?
+# how many tracks does the word "f*ck" appear in?
 tidier_dg %>%
   select(track_name, word) %>%
   filter(word == "fuck") %>%
