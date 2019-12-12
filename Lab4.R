@@ -9,7 +9,7 @@ library(ggthemes)
 library(tidytext)
 library(wordcloud)
 library(ggridges)
-library(wesanderson)
+library(RCRColorBrewer)
 library(yarrr)
 library(knitr)
 library(kableExtra)
@@ -169,7 +169,7 @@ spotify_genius %>%
   arrange(desc(`mean(valence)`)) %>%
   kable() %>%
   kable_styling("striped", full_width = F, position = "left") %>%
-  row_spec(row = 1:6, background = "#fffce4", color = "red")
+  row_spec(row = 1:6, bold=T, color = "white", background = "#D7261E")
 
 # table: top 5 songs by valence
 spotify_genius %>%
@@ -178,16 +178,16 @@ spotify_genius %>%
   arrange(-valence) %>%
   kable() %>%
   kable_styling("striped", full_width = F, position = "left") %>%
-  row_spec(row = 1:5, background = "azure", color = "deeppink")
+  row_spec(row = 1:5, bold=T, color = "white", background = "#D7261E")
 
 # sonic score graph
 pirateplot(valence + danceability + energy ~ ordered_albums, spotify_genius,
-           pal = c(wes_palettes$GrandBudapest2, wes_palettes$Moonrise3[1:2]),
+           pal = "southpark",
            xlab = "album", ylab = "sonic score",
            theme = 0, point.o = 0.7, avg.line.o = 1, jitter.val = .05,
            bty = "n", cex.axis = 0.6, xaxt = "n")
 axis(1, cex.axis = 0.6, lwd = 0)
-legend("topright", c("1: The Money Store", "2:  No Love Deep Web", "3: Government Plates", "4: The Powers That B", "5: Bottomless Pit", "6: Year Of The Snitch"), bty = "n", cex = 0.6)
+legend("bottomleft", c("1: The Money Store", "2:  No Love Deep Web", "3: Government Plates", "4: The Powers That B", "5: Bottomless Pit", "6: Year Of The Snitch"), bty = "n", cex = 0.6)
 
 # The Money Store sonic scores
 spotify_genius %>%
@@ -198,7 +198,7 @@ spotify_genius %>%
   filter(album_name == "The Money Store") %>%
   kable() %>%
   kable_styling(full_width = F, position = "left") %>%
-  row_spec(row = 1:13, background = "seashell", color = "#b39db2")
+  row_spec(row = 1:13,  bold=T, color = "white", background = "#D7261E")
 
 # YOTS sonic scores
 spotify_genius %>%
@@ -209,7 +209,7 @@ spotify_genius %>%
   filter(album_name == "Year Of The Snitch") %>%
   kable() %>%
   kable_styling(full_width = F, position = "left") %>%
-  row_spec(row = 1:13, background = "seashell", color = "#b39db2")
+  row_spec(row = 1:13,bold=T, color = "white", background = "#D7261E")
 
 # album by energy
 spotify_genius %>%
@@ -218,11 +218,15 @@ spotify_genius %>%
   arrange(desc(`mean(energy)`)) %>%
   kable() %>%
   kable_styling(full_width = F, position = "left") %>%
-  row_spec(row = 1, background = "seashell", color = "#b39db2")
+  row_spec(row = 1, bold=T, color = "white", background = "#D7261E")
 
 # tokenized and cleaned datasets of lyrics for textual analysis
 tidy_dg <- spotify_genius %>% unnest_tokens(word, lyrics)
-tidier_dg <- tidy_dg %>% anti_join(rbind(stop_words[1], "uh", "yeah", "hey", "baby", "ooh", "wanna", "gonna", "ah", "ahh", "ha", "la", "mmm", "whoa", "haa", "dah", "di"))
+tidier_dg <- tidy_dg %>% anti_join(rbind(stop_words[1], 
+                                         "uh", "yeah", "hey", "baby", "ooh", "wanna", 
+                                         "gonna", "ah", "ahh", "ha", "la", "mmm", "whoa", 
+                                         "haa", "dah", "di", "blo", "doe", "aye", "poe", 
+                                         "yo", "gotta", "em", "wah", "til"))
 tidier_dg$word[tidier_dg$word == "don" | tidier_dg$word == "didn"] <- NA
 tidier_dg$word[tidier_dg$word == "ain"] <- NA
 tidier_dg$word[tidier_dg$word == "isn"] <- NA
@@ -242,7 +246,7 @@ word_count <- na.omit(word_count)
 
 wordcloud(words = word_count$word, freq = word_count$n,
           max.words=100, random.order=FALSE,
-          colors= c(wes_palettes$Moonrise3[c(1:2,5)], wes_palettes$Royal2[5]))
+          colors= brewer.pal(n = 8, name = "Dark2"))
 
 # how many tracks does the word "fuck" appear in?
 tidier_dg %>%
@@ -262,7 +266,7 @@ word_count_ms <- na.omit(word_count_ms)
 
 wordcloud(words = word_count_ms$word, freq = word_count_ms$n,
           max.words=25, random.order=FALSE,
-          colors= c(wes_palettes$GrandBudapest2[3:1]))
+          colors= brewer.pal(n = 8, name = "Dark2"))
 
 # wordcloud: Year Of The Snitch
 word_count_yots <- tidier_dg %>%
@@ -275,7 +279,7 @@ word_count_yots <- na.omit(word_count_yots)
 
 wordcloud(words = word_count_yots$word, freq = word_count_yots$n,
           max.words=25, random.order=FALSE,
-          colors= c(wes_palettes$GrandBudapest2[3:1]))
+          colors= brewer.pal(n = 8, name = "Dark2"))
 
 tidier_dg$album_release_year <- as.character(tidier_dg$album_release_year)
 tidier_dg$album_release_year <- as.numeric(substr(tidier_dg$album_release_year, 1, 4))
@@ -291,12 +295,12 @@ lexical_diversity <- tidy_dg %>% group_by(track_name, ordered_albums) %>%
 
 # lexical diversity plot
 pirateplot(lex_div ~ ordered_albums, lexical_diversity,
-           pal = c("cyan3", "darkgoldenrod1", "maroon4", "red3", "#b39db2", "black"),
+           pal = "basel",
            xlab = "album", ylab = "lexical diversity",
            theme = 0, point.o = 0.5, avg.line.o = 1, jitter.val = .05,
            bty = "n", cex.axis = 0.6, xaxt = "n")
 axis(1, cex.axis = 0.6, lwd = 0)
-legend("topright", c("1: The Money Store", "2:  No Love Deep Web", "3: Government Plates", "4: The Powers That B", "5: Bottomless Pit", "6: Year Of The Snitch"), bty = "n", cex = 0.6)
+legend("topleft", c("1: The Money Store", "2:  No Love Deep Web", "3: Government Plates", "4: The Powers That B", "5: Bottomless Pit", "6: Year Of The Snitch"), bty = "n", cex = 0.6)
 
 # least lexically diverse tracks
 tidy_dg %>% group_by(track_name, album_name) %>%
@@ -307,7 +311,7 @@ tidy_dg %>% group_by(track_name, album_name) %>%
   head(5) %>%
   kable() %>%
   kable_styling(full_width = F, position = "left") %>%
-  row_spec(row = 1:5, background = "azure", color = "palevioletred")
+  row_spec(row = 1:5, bold=T, color = "white", background = "#D7261E")
 
 # most lexically diverse tracks
 tidy_dg %>% group_by(track_name, album_name) %>%
@@ -318,7 +322,7 @@ tidy_dg %>% group_by(track_name, album_name) %>%
   head(5) %>%
   kable() %>%
   kable_styling(full_width = F, position = "left") %>%
-  row_spec(row = 1:5, background = "azure", color = "palevioletred")
+  row_spec(row = 1:5, bold=T, color = "white", background = "#D7261E")
 
 # joining the tokenized, tidied lyric dataset with sentiment lexicons
 dg_nrc_sub <- tidier_dg %>%
@@ -346,7 +350,7 @@ dg_AFINN %>%
   theme_fivethirtyeight() +
   theme(panel.background = element_rect(fill = "white")) +
   theme(plot.background = element_rect(fill = "white")) +
-  scale_fill_manual(values = c("palevioletred", "violetred3", "greenyellow", "lightpink", "olivedrab3", "mediumseagreen")) +
+  scale_fill_manual(values = brewer.pal(n = 6, name = "Dark2")) +
   theme(legend.position="none")
 
 # The Money Store pyramid plot
@@ -371,7 +375,7 @@ sent_dg_ms %>%
   ylim(-35,10) +
   theme(panel.background = element_rect(fill = "white")) +
   theme(plot.background = element_rect(fill = "white")) +
-  scale_fill_manual(values = c("palevioletred", "olivedrab3")) +
+  scale_fill_manual(values = brewer.pal(n = 2, name = "Set1")) +
   theme(legend.position="none")
 
 # all-album radar chart
