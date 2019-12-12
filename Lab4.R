@@ -187,6 +187,15 @@ pirateplot(valence + energy + danceability ~ ordered_albums, spotify_genius,
 axis(1, cex.axis = 0.6, lwd = 0)
 legend("bottomleft", c("1: The Money Store", "2:  No Love Deep Web", "3: Government Plates", "4: The Powers That B", "5: Bottomless Pit", "6: Year Of The Snitch"), bty = "n", cex = 0.6)
 
+# album by energy
+spotify_genius %>%
+  group_by(album_name) %>%
+  summarise(mean(energy)) %>%
+  arrange(desc(`mean(energy)`)) %>%
+  kable() %>%
+  kable_styling(full_width = F, position = "left") %>%
+  row_spec(row = 1:6, bold=T, color = "white", background = "#D7261E")
+
 # The Money Store sonic scores
 spotify_genius %>%
   group_by(track_name, album_name) %>%
@@ -228,15 +237,6 @@ spotify_genius %>%
   kable() %>%
   kable_styling(full_width = F, position = "left") %>%
   row_spec(row = 1:13,  bold=T, color = "white", background = "#D7261E")
-
-# album by energy
-spotify_genius %>%
-  group_by(album_name) %>%
-  summarise(mean(energy)) %>%
-  arrange(desc(`mean(energy)`)) %>%
-  kable() %>%
-  kable_styling(full_width = F, position = "left") %>%
-  row_spec(row = 1:6, bold=T, color = "white", background = "#D7261E")
 
 
 #Lexical analysis:
