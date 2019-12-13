@@ -153,7 +153,7 @@ spotify_genius$ordered_albums <- ordered_albums
 # valence ridge plot (I used fig.height = 6, fig.width = 6 in an rmd)
 spotify_genius %>% ggplot(aes(x = valence, y = ordered_albums, fill = ..x..)) +
   geom_density_ridges_gradient(scale = 0.9) +
-  scale_fill_gradient(low = "white", high = "maroon3") +
+  scale_fill_gradient(low = "white", high = "#1FA8B3") +
   theme_fivethirtyeight() +
   theme(panel.background = element_rect(fill = "white")) +
   theme(plot.background = element_rect(fill = "white")) +
@@ -167,7 +167,7 @@ spotify_genius %>%
   arrange(desc(`mean(valence)`)) %>%
   kable() %>%
   kable_styling("striped", full_width = F, position = "left") %>%
-  row_spec(row = 1:6, bold=T, color = "white", background = "#D7261E")
+  row_spec(row = 1:6, bold=T, color = "black", background = "#81ECEC")
 
 # table: top 5 songs by valence
 spotify_genius %>%
@@ -176,11 +176,11 @@ spotify_genius %>%
   arrange(-valence) %>%
   kable() %>%
   kable_styling("striped", full_width = F, position = "left") %>%
-  row_spec(row = 1:5, bold=T, color = "white", background = "#D7261E")
+  row_spec(row = 1:5, bold=T, color = "black", background = "#81ECEC")
 
 # sonic score
 pirateplot(valence + energy + danceability ~ ordered_albums, spotify_genius,
-           pal = "southpark",
+           pal = "decision",
            xlab = "album", ylab = "sonic score",
            theme = 0, point.o = 0.7, avg.line.o = 1, jitter.val = .05,
            bty = "n", cex.axis = 0.6, xaxt = "n")
@@ -194,7 +194,7 @@ spotify_genius %>%
   arrange(desc(`mean(energy)`)) %>%
   kable() %>%
   kable_styling(full_width = F, position = "left") %>%
-  row_spec(row = 1:6, bold=T, color = "white", background = "#D7261E")
+  row_spec(row = 1:6, bold=T, color = "black", background = "#81ECEC")
 
 # The Money Store sonic scores
 spotify_genius %>%
@@ -205,7 +205,7 @@ spotify_genius %>%
   filter(album_name == "The Money Store") %>%
   kable() %>%
   kable_styling(full_width = F, position = "left") %>%
-  row_spec(row = 1:13,  bold=T, color = "white", background = "#D7261E")
+  row_spec(row = 1:13,  bold=T, color = "black", background = "#81ECEC")
 
 # YOTS sonic scores
 spotify_genius %>%
@@ -216,11 +216,22 @@ spotify_genius %>%
   filter(album_name == "Year Of The Snitch") %>%
   kable() %>%
   kable_styling(full_width = F, position = "left") %>%
-  row_spec(row = 1:13,bold=T, color = "white", background = "#D7261E")
+  row_spec(row = 1:13,bold=T, color = "black", background = "#81ECEC")
+
+# overall sonic scores
+spotify_genius %>%
+  group_by(track_name, album_name) %>%
+  mutate(sonic_score = valence + danceability + energy) %>%
+  select(album_name, track_name, sonic_score) %>%
+  arrange(desc(sonic_score)) %>%
+  kable() %>%
+  kable_styling(full_width = F, position = "left") %>%
+  row_spec(row = 1:13,bold=T, color = "black", background = "#81ECEC")
+
 
 # anger index
 pirateplot(sqrt((1 - valence) * energy) ~ ordered_albums, spotify_genius,
-           pal = "southpark",
+           pal = "decision",
            xlab = "album", ylab = "sonic score",
            theme = 0, point.o = 0.7, avg.line.o = 1, jitter.val = .05,
            bty = "n", cex.axis = 0.6, xaxt = "n")
@@ -236,7 +247,7 @@ spotify_genius %>%
   filter(album_name == "Year Of The Snitch") %>%
   kable() %>%
   kable_styling(full_width = F, position = "left") %>%
-  row_spec(row = 1:13,  bold=T, color = "white", background = "#D7261E")
+  row_spec(row = 1:13,  bold=T, color = "black", background = "#81ECEC")
 
 
 #Lexical analysis:
@@ -267,7 +278,7 @@ word_count <- na.omit(word_count)
 
 wordcloud(words = word_count$word, freq = word_count$n,
           max.words=100, random.order=FALSE,
-          colors= brewer.pal(n = 8, name = "Dark2"))
+          colors= brewer.pal(n = 6, name = "Dark2"))
 
 # how many tracks does the word "f*ck" appear in?
 tidier_dg %>%
@@ -287,7 +298,7 @@ word_count_ms <- na.omit(word_count_ms)
 
 wordcloud(words = word_count_ms$word, freq = word_count_ms$n,
           max.words=25, random.order=FALSE,
-          colors= brewer.pal(n = 8, name = "Dark2"))
+          colors= brewer.pal(n = 8, name = "GnBu"))
 
 # wordcloud: Year Of The Snitch
 word_count_yots <- tidier_dg %>%
@@ -300,7 +311,7 @@ word_count_yots <- na.omit(word_count_yots)
 
 wordcloud(words = word_count_yots$word, freq = word_count_yots$n,
           max.words=25, random.order=FALSE,
-          colors= brewer.pal(n = 8, name = "Dark2"))
+          colors= brewer.pal(n = 8, name = "GnBu"))
 
 tidier_dg$album_release_year <- as.character(tidier_dg$album_release_year)
 tidier_dg$album_release_year <- as.numeric(substr(tidier_dg$album_release_year, 1, 4))
@@ -332,7 +343,7 @@ tidy_dg %>% group_by(track_name, album_name) %>%
   head(5) %>%
   kable() %>%
   kable_styling(full_width = F, position = "left") %>%
-  row_spec(row = 1:5, bold=T, color = "white", background = "#D7261E")
+  row_spec(row = 1:5, bold=T, color = "black", background = "#81ECEC")
 
 # most lexically diverse tracks
 tidy_dg %>% group_by(track_name, album_name) %>%
@@ -343,7 +354,7 @@ tidy_dg %>% group_by(track_name, album_name) %>%
   head(5) %>%
   kable() %>%
   kable_styling(full_width = F, position = "left") %>%
-  row_spec(row = 1:5, bold=T, color = "white", background = "#D7261E")
+  row_spec(row = 1:5, bold=T, color = "black", background = "#81ECEC")
 
 # joining the tokenized, tidied lyric dataset with sentiment lexicons
 dg_nrc_sub <- tidier_dg %>%
@@ -371,7 +382,7 @@ dg_AFINN %>%
   theme_fivethirtyeight() +
   theme(panel.background = element_rect(fill = "white")) +
   theme(plot.background = element_rect(fill = "white")) +
-  scale_fill_manual(values = brewer.pal(n = 6, name = "Dark2")) +
+  scale_fill_manual(values = brewer.pal(n = 6, name = "GnBu")) +
   theme(legend.position="none")
 
 # The Money Store pyramid plot
@@ -396,7 +407,7 @@ sent_dg_ms %>%
   ylim(-35,10) +
   theme(panel.background = element_rect(fill = "white")) +
   theme(plot.background = element_rect(fill = "white")) +
-  scale_fill_manual(values = brewer.pal(n = 2, name = "Set1")) +
+  scale_fill_manual(values = brewer.pal(n = 2, name = "Pastel1")) +
   theme(legend.position="none")
 
 # all-album radar chart
